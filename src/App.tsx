@@ -25,15 +25,15 @@ const App: React.FC = () => {
   const [showFormatMenu, setShowFormatMenu] = useState<boolean>(false);
 
   const [cardData, setCardData] = useState<CardData>({
-    name: '劉名政',
-    englishName: 'Foy',
+    name: '範例姓名',
+    englishName: 'sample name',
     title: 'Engineer',
     company: 'Industrial Safety And Health Association (ISHA) Of The R.O.C',
     department: 'Safety And Environmental Technology Department',
     office: 'Kaohsiung Office',
-    phone1: '+886-7-5503115 ext.28',
-    phone2: '+886-955-787-053',
-    email: 'foylaou0326@mail.isha.org.tw',
+    phone1: '+886-7-5503115 ext.',
+    phone2: '+886-955-123-123',
+    email: 'sample@mail.isha.org.tw',
     website: 'www.isha.org.tw',
     websiteUrl: 'https://www.isha.org.tw/',
     address: '813707 高雄市左營區博愛三路12號15樓',
