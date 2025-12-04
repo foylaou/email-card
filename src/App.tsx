@@ -46,10 +46,10 @@ const App: React.FC = () => {
   };
 
   const generateFullHTML = (): string => {
-    return `<table cellpadding="0" cellspacing="0" border="0" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; border-collapse: collapse; max-width: 650px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+    return `<table  style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; border-collapse: collapse; max-width: 650px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
   <tr>
     <td style="padding: 30px 25px;">
-      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse; width: 100%;">
+      <table  style="border-collapse: collapse; width: 100%;">
         <tr>
           <td style="width: 140px; text-align: center; vertical-align: top;">
             <img src="${cardData.imageUrl}" alt="${cardData.name}" width="120" height="120" style="border-radius: 50%; border: 4px solid #e3f2fd; box-shadow: 0 6px 20px rgba(0,0,0,0.15); display: block; margin: 0 auto;">
@@ -64,7 +64,7 @@ const App: React.FC = () => {
         </tr>
       </table>
       <div style="height: 2px; background: linear-gradient(90deg, #3498db 0%, #2ecc71 50%, #e74c3c 100%); margin: 25px 0;"></div>
-      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse; width: 100%;">
+      <table  style="border-collapse: collapse; width: 100%;">
         <tr>
           <td style="width: 35px; padding: 8px 0; text-align: center;">
             <span style="display: inline-block; width: 28px; height: 28px; background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); border-radius: 50%; line-height: 28px; text-align: center;">📞</span>
@@ -106,7 +106,7 @@ const App: React.FC = () => {
   };
 
   const generateSimpleHTML = (): string => {
-    return `<table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: 14px; color: #333; border-collapse: collapse;">
+    return `<table style="font-family: Arial, sans-serif; font-size: 14px; color: #333; border-collapse: collapse;">
   <tr>
     <td style="padding-right: 15px; vertical-align: top;">
       <img src="${cardData.imageUrl}" alt="${cardData.name}" width="100" height="100" style="border-radius: 50%; border: 3px solid #e3f2fd; display: block;">
@@ -125,34 +125,47 @@ const App: React.FC = () => {
 </table>`;
   };
 
-  const copyAsRichText = async (): Promise<void> => {
-    try {
-      const html = generateFullHTML();
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = html;
-      tempDiv.style.position = 'absolute';
-      tempDiv.style.left = '-9999px';
-      document.body.appendChild(tempDiv);
+    /**
+     * 嘗試使用 Clipboard API 複製富文本 (HTML 格式)
+     */
+    const copyAsRichText = async (): Promise<void> => {
+      const html = generateFullHTML(); // 假設這個函數生成包含 HTML 標籤的字串
 
-      const range = document.createRange();
-      range.selectNodeContents(tempDiv);
-      const selection = window.getSelection();
 
-      if (selection) {
-        selection.removeAllRanges();
-        selection.addRange(range);
-        document.execCommand('copy');
-        selection.removeAllRanges();
-        document.body.removeChild(tempDiv);
+      try {
+        // 2. 準備 HTML Blob
+        const htmlBlob = new Blob([html], { type: 'text/html' });
+
+        // 3. 準備純文字 Blob (許多應用程式偏好同時提供純文字版本)
+        // 這裡我們需要一個方法將 HTML 轉換為純文字。
+        // 最簡單的方式是創建一個臨時 div 來獲取 innerText:
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        const plainText = tempDiv.innerText;
+        const textBlob = new Blob([plainText], { type: 'text/plain' });
+
+        // 4. 建立 ClipboardItem
+        const item = new ClipboardItem({
+          'text/html': htmlBlob,
+          'text/plain': textBlob,
+        });
+
+        // 5. 寫入剪貼簿
+        await navigator.clipboard.write([item]);
+
+        // 6. 成功後的處理
         setCopied(true);
         setShowFormatMenu(false);
         setTimeout(() => setCopied(false), 2000);
+        console.log('富文本已成功複製 (使用 Clipboard API)。');
+
+      } catch (err) {
+        console.error('複製富文本失敗 (Clipboard API):', err);
+        alert('複製失敗，請確認您已授予剪貼簿權限。');
       }
-    } catch (err) {
-      console.error('複製失敗:', err);
-      alert('複製失敗，請使用 Chrome、Edge 或 Firefox 瀏覽器。');
-    }
-  };
+    };
+
+
 
   const copyHTMLCode = async (format: 'full' | 'simple'): Promise<void> => {
     try {
